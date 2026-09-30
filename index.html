@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>米龜的日語教室 - 日文聽力測驗</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-secondary: #aaa;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --border-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            padding: 25px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .audio-section {
+            display: flex;
+            justify-content: center;
+            margin: 25px 0;
+        }
+
+        .btn-play {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s, transform 0.1s;
+            font-weight: bold;
+        }
+
+        .btn-play:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-play:active {
+            transform: scale(0.98);
+        }
+
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option-item {
+            background-color: #2a2a2a;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.05rem;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-color);
+            background-color: #333;
+        }
+
+        .option-item.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(59, 130, 246, 0.15);
+        }
+
+        .option-item.correct {
+            border-color: var(--success-color);
+            background-color: rgba(16, 185, 129, 0.15);
+        }
+
+        .option-item.incorrect {
+            border-color: var(--error-color);
+            background-color: rgba(239, 68, 68, 0.15);
+        }
+
+        .nav-section {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-next {
+            background-color: #fff;
+            color: #121212;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .explanation-box {
+            background-color: #252525;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .result-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 20px 0;
+        }
+
+        .btn-restart {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Responsive utilities */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.6rem; }
+            .container { padding: 15px; }
+            .option-item { font-size: 0.95rem; padding: 12px; }
+            .btn-play { padding: 10px 24px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>米龜的日語教室</h1>
+        <div class="subtitle">隨機日文聽力測驗 (每回合 5 題)</div>
+    </header>
+
+    <div class="container" id="quiz-container">
+        <!-- 動態內容將由 JavaScript 注入 -->
+    </div>
+
+    <script>
+        // 擴充大型題庫 (包含日常、商務、校園、JLPT模擬題型)
+        const itemBank = [
+            {
+                text: "明日の会議は、午後三時から始めます。遅れないようにしてください。",
+                options: ["會議明天下午三點開始", "會議明天下午四點開始", "會議今天下午三點開始", "會議今天下午四點開始"],
+                correct: 0,
+                script: "明日の会議は、午後三時から始めます。遅れないようにしてください。",
+                translation: "明天的會議從下午三點開始。請注意不要遲到。",
+                explanation: "關鍵詞在於「明日（あした・明天）」與「午後三時（ごごさんじ・下午三點）」。"
+            },
+            {
+                text: "すみません、この近くにコンビニはありますか？",
+                options: ["這附近有超市嗎？", "這附近有便利商店嗎？", "這附近有洗手間嗎？", "這附近有車站嗎？"],
+                correct: 1,
+                script: "すみません、この近くにコンビニはありますか？",
+                translation: "不好意思，這附近有便利商店嗎？",
+                explanation: "「コンビニ」是 Convenience store (便利商店) 的簡稱。超市是「スーパー」。"
+            },
+            {
+                text: "田中さん、ちょっと手伝ってもらえませんか？",
+                options: ["田中先生，可以借我一支筆嗎？", "田中先生，可以幫我一下嗎？", "田中先生，你要去哪裡？", "田中先生，可以教我日文嗎？"],
+                correct: 1,
+                script: "田中さん、ちょっと手伝ってもらえませんか？",
+                translation: "田中先生，可以稍微幫我一下嗎？",
+                explanation: "動詞「手伝う（てつだう）」代表幫忙。「～てもらえませんか」常用於禮貌請求對方協助。"
+            },
+            {
+                text: "来週の土曜日に、みんなで海へ行きます。一緒に行きませんか？",
+                options: ["下週日要一起去海邊嗎？", "這週六要一起去山上嗎？", "下週六要一起去海邊嗎？", "這週日要一起去海邊嗎？"],
+                correct: 2,
+                script: "来週の土曜日に、みんなで海へ行きます。一緒に行きませんか？",
+                translation: "下週六大家要一起去海邊。你要不要一起去呢？",
+                explanation: "時間點為「来週の土曜日（らいしゅうのどようび・下週六）」，地點為「海（うみ・海邊）」。"
+            },
+            {
+                text: "駅の前に新しいカフェができましたよ。コーヒーがとても美味しいです。",
+                options: ["車站後面開了新咖啡廳", "車站前面開了新餐廳", "車站前面開了新咖啡廳", "百貨公司裡開了新咖啡廳"],
+                correct: 2,
+                script: "駅の前に新しいカフェができましたよ。コーヒーがとても美味しいです。",
+                translation: "車站前面開了一家新的咖啡廳喔。咖啡非常美味。",
+                explanation: "「駅の前（えきのまえ）」代表車站前面，「カフェ」則是咖啡廳。"
+            },
+            {
+                text: "雨が降りそうですね。傘を持っていったほうがいいですよ。",
+                options: ["已經下雨了，要帶傘喔。", "好像快下雨了，最好帶把傘喔。", "天氣真好，不用帶傘。", "風好大，傘要拿好。"],
+                correct: 1,
+                script: "雨が降りそうですね。傘を持っていったほうがいいですよ。",
+                translation: "好像快下雨了呢。最好帶把傘出門喔。",
+                explanation: "「動詞連用形 + そう」表示眼前的跡象看起來快要發生某事。這裡「降りそう」意為快下雨了。「〜ほうがいい」表示建議。"
+            },
+            {
+                text: "日本語の勉強は難しいですが、とても面白いです。",
+                options: ["日文學習很簡單，也很有趣。", "日文學習很難，而且很無聊。", "日文學習很難，但是很有趣。", "日文學習很簡單，但是很無聊。"],
+                correct: 2,
+                script: "日本語の勉強は難しいですが、とても面白いです。",
+                translation: "學習日文雖然很難，但是非常有趣。",
+                explanation: "接續詞「が」表示前後句意轉折。「難しい（難）」與「面白い（有趣）」形成對比。"
+            },
+            {
+                text: "お肉とお魚と、どちらが好きですか？",
+                options: ["肉類和蔬菜，你喜歡哪一個？", "肉類和魚類，你喜歡哪一個？", "咖啡和茶，你喜歡哪一個？", "日本和台灣，你喜歡哪一個？"],
+                correct: 1,
+                script: "お肉とお魚と、どちらが好きですか？",
+                translation: "肉和魚，你比較喜歡哪一個？",
+                explanation: "「お肉（おにく・肉）」、「お魚（おさかな・魚）」。「～と～と、どちらが好きですか」是兩者選一的標準句型。"
+            },
+            {
+                text: "昨日、友達と映画を見に行きました。とても感動しました。",
+                options: ["昨天和朋友去看電影，非常感動。", "明天要和朋友去看電影，很期待。", "昨天和家人去吃飯，很好吃。", "前天和同學去唱歌，很開心。"],
+                correct: 0,
+                script: "昨日、友達と映画を見に行きました。とても感動しました。",
+                translation: "昨天和朋友去看電影了。非常感動。",
+                explanation: "「昨日（きのう・昨天）」、「映画（えいが・電影）」與「感動（かんどう）しました」皆為過去式句尾。"
+            },
+            {
+                text: "すみません、この服のMサイズはありますか？",
+                options: ["不好意思，這件衣服有L號嗎？", "不好意思，這條褲子有M號嗎？", "不好意思，這件衣服有M號嗎？", "不好意思，這雙鞋子有24號嗎？"],
+                correct: 2,
+                script: "すみません、この服のMサイズはありますか？",
+                translation: "不好意思，這件衣服有M號嗎？",
+                explanation: "「服（ふく）」代表衣服，「Mサイズ」代表M尺寸/M號。"
+            }
+        ];
+
+        let currentQuizSet = [];
+        let currentIndex = 0;
+        let score = 0;
+        let selectedOptionIndex = null;
+        let isAnswered = false;
+
+        const container = document.getElementById('quiz-container');
+
+        // 初始化一回合 5 題的隨機題目
+        function initQuiz() {
+            // 洗牌演算法隨機選出 5 題
+            const shuffled = [...itemBank].sort(() => 0.5 - Math.random());
+            currentQuizSet = shuffled.slice(0, 5);
+            currentIndex = 0;
+            score = 0;
+            renderQuestion();
+        }
+
+        // 播放語音功能
+        function playAudio(text) {
+            if ('speechSynthesis' in window) {
+                // 先取消目前正在播放的語音以免重疊
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ja-JP';
+                utterance.rate = 0.85; // 稍微放慢一點點以利聽力練習
+                
+                // 尋找最佳的日語原生發音
+                const voices = window.speechSynthesis.getVoices();
+                const jaVoice = voices.find(voice => voice.lang === 'ja-JP' || voice.lang.includes('ja'));
+                if (jaVoice) utterance.voice = jaVoice;
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('抱歉，您的瀏覽器不支援語音播放功能。建議使用 Chrome 或 Safari。');
+            }
+        }
+
+        // 渲染題目
+        function renderQuestion() {
+            isAnswered = false;
+            selectedOptionIndex = null;
+            const q = currentQuizSet[currentIndex];
+
+            let optionsHtml = '';
+            q.options.forEach((opt, idx) => {
+                optionsHtml += `<li class="option-item" onclick="selectOption(${idx})" id="opt-${idx}">${opt}</li>`;
+            });
+
+            container.innerHTML = `
+                <div class="progress-bar">
+                    <span>第 ${currentIndex + 1} 題 / 共 5 題</span>
+                    <span>目前得分: ${score}</span>
+                </div>
+                <div class="audio-section">
+                    <button class="btn-play" onclick="playAudio('${q.script.replace(/'/g, "\'")}')">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        播放音檔 (點擊聆聽)
+                    </button>
+                </div>
+                <ul class="options-list">
+                    ${optionsHtml}
+                </ul>
+                <div id="explanation-container"></div>
+                <div class="nav-section">
+                    <button class="btn-next" id="btn-action" onclick="submitOrNext()" disabled>檢查答案</button>
+                </div>
+            `;
+            
+            // 頁面加載後或換題時自動預備好語音清單(部分瀏覽器修正)
+            if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = () => {};
+            }
+        }
+
+        // 選擇選項
+        function selectOption(idx) {
+            if (isAnswered) return;
+            
+            selectedOptionIndex = idx;
+            
+            // 清除其他選取狀態
+            const items = document.querySelectorAll('.option-item');
+            items.forEach((item, index) => {
+                if (index === idx) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+
+            document.getElementById('btn-action').disabled = false;
+        }
+
+        // 送出答案或進入下一題
+        function submitOrNext() {
+            const q = currentQuizSet[currentIndex];
+            const actionBtn = document.getElementById('btn-action');
+
+            if (!isAnswered) {
+                // 進入「檢查答案」模式
+                isAnswered = true;
+                const isCorrect = (selectedOptionIndex === q.correct);
+                
+                if (isCorrect) {
+                    score += 20; // 每題 20 分，滿分 100
+                }
+
+                // 渲染正確與錯誤視覺
+                q.options.forEach((_, idx) => {
+                    const item = document.getElementById(`opt-${idx}`);
+                    item.classList.remove('selected');
+                    if (idx === q.correct) {
+                        item.classList.add('correct');
+                    } else if (idx === selectedOptionIndex) {
+                        item.classList.add('incorrect');
+                    }
+                });
+
+                // 顯示詳解
+                const expContainer = document.getElementById('explanation-container');
+                expContainer.innerHTML = `
+                    <div class="explanation-box">
+                        <div class="explanation-title">${isCorrect ? '✅ 回答正確！' : '❌ 回答錯誤'}</div>
+                        <p><strong>日文原文：</strong>${q.script}</p>
+                        <p><strong>中文翻譯：</strong>${q.translation}</p>
+                        <p style="margin-top: 5px; color: var(--text-secondary);"><strong>解析：</strong>${q.explanation}</p>
+                    </div>
+                `;
+
+                // 切換按鈕文字
+                if (currentIndex === 4) {
+                    actionBtn.innerText = "查看結算結果";
+                } else {
+                    actionBtn.innerText = "下一題";
+                }
+            } else {
+                // 進入「下一題」或「結算」
+                if (currentIndex < 4) {
+                    currentIndex++;
+                    renderQuestion();
+                } else {
+                    renderResult();
+                }
+            }
+        }
+
+        // 渲染結算畫面
+        function renderResult() {
+            let feedback = "繼續加油！多聽多練一定會更棒！";
+            if (score === 100) feedback = "太厲害了！完美的滿分！💯";
+            else if (score >= 80) feedback = "太棒了！您的聽力有相當好的水準！🔥";
+            else if (score >= 60) feedback = "及格囉！再接再厲！👍";
+
+            container.innerHTML = `
+                <div class="result-screen">
+                    <h2>測驗結束</h2>
+                    <p style="color: var(--text-secondary); margin-top: 5px;">本回合 5 題隨機測驗已完成</p>
+                    <div class="score-display">${score} <span style="font-size: 1.5rem; color: var(--text-color);">分</span></div>
+                    <p style="font-size: 1.1rem; margin-bottom: 25px;">${feedback}</p>
+                    <button class="btn-restart" onclick="initQuiz()">再挑戰一回合 (隨機新題)</button>
+                </div>
+            `;
+        }
+
+        // 開機啟動
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
